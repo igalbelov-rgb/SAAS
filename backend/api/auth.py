@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from pydantic import BaseModel, EmailStr
 from app.database import get_session
 from app.models import User
-from app.crypto import hash_password, verify_password  # 🔥 ייבוא הפונקציות הישירות
+from app.crypto import hash_password, verify_password, create_access_token  # 🔥 ייבוא הפונקציות הישירות
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -60,13 +60,21 @@ def login_user(login_data: UserLogin, session: Session = Depends(get_session)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
-        )
-    
-    # 2. אימות הסיסמה המוצפנת (שימוש בפונקציה הישירה)
+         )
+
+    # 2. אימות הסיסמה המוצפנת
     if not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
-    
-    return {"message": "Login successful", "user_id": user.id, "email": user.email}
+
+    # 3. יצירת ה-JWT Token המאובטח למשתמש
+    access_token = create_access_token(data={"sub": str(user.id), "email": user.email})
+
+    # 4. החזרת המבנה הסטנדרטי שה-Client מצפה לו
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user": {"id": user.id, "email": user.email, "full_name": user.full_name}
+    }
