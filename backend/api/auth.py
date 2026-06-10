@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from pydantic import BaseModel, EmailStr
 from app.database import get_session
 from app.models import User
-from app.crypto import CryptoHelper  # 🔥 מותאם לתיקייה החדשה
+from app.crypto import hash_password, verify_password  # 🔥 ייבוא הפונקציות הישירות
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -36,8 +36,8 @@ def register_user(user_data: UserRegister, session: Session = Depends(get_sessio
             detail="Email already registered"
         )
     
-    # 2. הצפנת הסיסמה ויצירת המשתמש החדש
-    hashed_pwd = CryptoHelper.hash_password(user_data.password)
+    # 2. הצפנת הסיסמה ויצירת המשתמש החדש (שימוש בפונקציה הישירה)
+    hashed_pwd = hash_password(user_data.password)
     new_user = User(
         email=user_data.email,
         hashed_password=hashed_pwd,
@@ -62,8 +62,8 @@ def login_user(login_data: UserLogin, session: Session = Depends(get_session)):
             detail="Invalid email or password"
         )
     
-    # 2. אימות הסיסמה המוצפנת
-    if not CryptoHelper.verify_password(login_data.password, user.hashed_password):
+    # 2. אימות הסיסמה המוצפנת (שימוש בפונקציה הישירה)
+    if not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
