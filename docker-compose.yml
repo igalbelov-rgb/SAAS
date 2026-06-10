@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # 1. מסד הנתונים - PostgreSQL
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: saas_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: saas_user
+      POSTGRES_PASSWORD: saas_robust_password_2026 # בפרודקשן אמיתי נמשוך מ-.env שורש
+      POSTGRES_DB: saas_production_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - saas-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saas_user -d saas_production_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. שרת ה-Backend (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: saas_backend_api
+    restart: always
+    depends_on:
+      postgres-db:
+        condition: service_healthy # ה-Backend יעלה רק אחרי שהדאטאבייס מוכן לקבל פניות
+    env_file:
+      - ./backend/.env.production
+    networks:
+      - saas-network
+    # פורט 8000 יהיה פתוח רק בתוך הרשת הפנימית עבור Nginx, אין צורך לחשוף אותו לעולם ב-ports
+
+  # 3. שרת ה-Frontend (React + Vite Build)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: saas_frontend_client
+    restart: always
+    networks:
+      - saas-network
+
+  # 4. שומר הסף והראוטר המרכזי - Nginx
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: saas_nginx_proxy
+    restart: always
+    ports:
+      - "80:80"   # מאזין לחריצי הרשת הציבוריים של השרת
+      - "443:443" # מוכן לתעודות SSL בהמשך
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - saas-network
+
+networks:
+  saas-network:
+    driver: bridge
+
+volumes:
+  postgres_data: # ווליום שמבטיח שהמידע של המשתמשים ישמר על הדיסק של השרת גם אם הקונטיינר קורס

@@ -1,0 +1,72 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlmodel import Session, select
+from pydantic import BaseModel, EmailStr
+from app.database import get_session
+from app.models import User
+from app.crypto import CryptoHelper  # 🔥 מותאם לתיקייה החדשה
+
+router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+
+# --- סכמות קלט/פלט (Schemas) ---
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: str | None = None
+
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+    full_name: str | None
+    is_active: bool
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+# --- Endpoints ---
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def register_user(user_data: UserRegister, session: Session = Depends(get_session)):
+    # 1. בדיקה האם המשתמש כבר קיים במערכת
+    existing_user = session.exec(select(User).where(User.email == user_data.email)).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # 2. הצפנת הסיסמה ויצירת המשתמש החדש
+    hashed_pwd = CryptoHelper.hash_password(user_data.password)
+    new_user = User(
+        email=user_data.email,
+        hashed_password=hashed_pwd,
+        full_name=user_data.full_name
+    )
+    
+    # 3. שמירה בדאטאבייס
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
+    
+    return new_user
+
+
+@router.post("/login")
+def login_user(login_data: UserLogin, session: Session = Depends(get_session)):
+    # 1. חיפוש המשתמש לפי אימייל
+    user = session.exec(select(User).where(User.email == login_data.email)).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    # 2. אימות הסיסמה המוצפנת
+    if not CryptoHelper.verify_password(login_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    return {"message": "Login successful", "user_id": user.id, "email": user.email}
