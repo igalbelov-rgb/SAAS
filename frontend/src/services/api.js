@@ -8,7 +8,19 @@ const api = axios.create({
   },
 });
 
-// הגדרת פונקציות ה-Auth
+// 🔥 Interceptor: מזרק אוטומטית את ה-JWT Token לכל בקשה שיוצאת לשרת
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+
+// 🔐 הגדרת פונקציות ה-Auth
 export const authService = {
   register: async (email, password, fullName) => {
     const response = await api.post('/auth/register', {
@@ -24,6 +36,26 @@ export const authService = {
       email,
       password,
     });
+    return response.data;
+  },
+};
+
+
+// 🚀 שירות חדש: טיפול במוצרים, סריקה והפצה (Milestone A)
+export const productService = {
+  /**
+   * שולח URL של מוצר ל-Backend כדי לסרוק נתונים ולהפיק קופי עם AI
+   */
+  scrapeProduct: async (productUrl) => {
+    const response = await api.post('/products/scrape', { url: productUrl });
+    return response.data;
+  },
+
+  /**
+   * משגר את התוכן המעובד לפלטפורמת הפצה ספציפית (telegram, facebook, pinterest)
+   */
+  publishToPlatform: async (platform, productData) => {
+    const response = await api.post(`/products/publish/${platform}`, productData);
     return response.data;
   },
 };
