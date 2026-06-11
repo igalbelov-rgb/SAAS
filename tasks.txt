@@ -1,3 +1,0 @@
-1. setting up ci/cd server
-2. integrate code repository to trigger pipeline
-3. build streamlined workflow to build and deploy apps 
