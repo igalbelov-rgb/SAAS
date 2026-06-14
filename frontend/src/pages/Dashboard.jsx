@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import { 
   Link2, Sparkles, SendHorizontal, Share2, Image, 
-  Layers, Loader2, AlertTriangle 
+  Layers, Loader2, LogOut 
 } from 'lucide-react';
 
 export default function Dashboard() {
-  // --- States למערכת ---
+  // --- System States ---
   const [productUrl, setProductUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('telegram'); // טאב פעיל בתצוגה המקדימה
+  const [activeTab, setActiveTab] = useState('telegram'); 
 
-  // דאטה פיקטיבי (Mock Data) לצורך בדיקת העיצוב, עד שנחבר את קריאות ה-API מהרשת
-  const [mockScrapedData, setMockScrapedData] = useState({
-    title: "אוזניות אלחוטיות Sony WH-1000XM5 עם סינון רעשים אקטיבי",
+  // Dynamic and young Mock Data
+  const [scrapedData, setScrapedData] = useState({
+    title: "Sony WH-1000XM5 Wireless Noise Canceling Headphones - High-Res Audio",
     imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80",
     aiCopy: {
-      telegram: "🔥 דיל מטורף בערוץ! 🔥\n\n🎧 אוזניות הדגל של סוני Sony WH-1000XM5 במחיר רצפה!\n✔️ סינון רעשים אקטיבי (ANC) מהטובים בעולם\n✔️ סוללה לעד 30 שעות עבודה ברצף\n\n📌 לפרטים ורכישה ישירה: https://amzn.to/example",
-      facebook: "מחפשים את חוויית הסאונד המושלמת? 🎧\n\nסוני שוב שוברת את השוק עם ה-WH-1000XM5. בדקנו את סינון הרעשים החדש שלהן והתוצאות פשוט מדהימות. מושלם לטיסות, עבודה מהמשרד או סתם ניתוק מהעולם.\n\n👇 קישור לסקירה המלאה והטבת רכישה בתגובה הראשונה!",
+      telegram: "🔥 CRAZY DEAL ALERT! 🔥\n\n🎧 Sony WH-1000XM5 Flagship Headphones at rock-bottom price!\n✔️ World-class Active Noise Canceling (ANC)\n✔️ Up to 30 hours of non-stop battery life\n\n📌 Get yours here: https://amzn.to/example",
+      facebook: "Ready to elevate your audio experience? 🎧\n\nSony is changing the game again with the WH-1000XM5. We tested the new noise canceling and the results are absolutely mind-blowing. Perfect for travel, remote work, or just tuning out the world.\n\n👇 Full review & discount link in the comments!",
       pinterest: "Sony WH-1000XM5 Review - The King of ANC Headphones. Best wireless headphones for travel, office setup, and audiophiles in 2026."
     }
   });
@@ -26,187 +26,216 @@ export default function Dashboard() {
     if (!productUrl) return;
     
     setIsLoading(true);
-    // סימולציה של סריקה מה-Backend (נחליף את זה ב-Axios בהמשך)
     setTimeout(() => {
       setIsLoading(false);
-    }, 2500);
+    }, 2000);
   };
 
   const handlePublish = (platform) => {
-    alert(`משלח את התוכן לפלטפורמת: ${platform} דרך הצינור של n8n...`);
+    alert(`⚡ Pushing content to ${platform.toUpperCase()} pipeline via n8n...`);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-50 font-sans antialiased" style={{ direction: 'rtl' }}>
+    /* --- Main Background: Styled like warm sand with a subtle tech grid pattern --- */
+    <div 
+      className="min-h-screen bg-amber-50/60 text-slate-800 font-sans antialiased selection:bg-amber-200 relative" 
+      style={{ 
+        direction: 'ltr',
+        backgroundImage: 'radial-gradient(#f59e0b 0.75px, transparent 0.75px)',
+        backgroundSize: '24px 24px',
+        backgroundOpacity: '0.15'
+      }}
+    >
       
-      {/* --- Top Navbar --- */}
-      <header className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+      {/* --- Top Dynamic Navbar --- */}
+      <header className="border-b-2 border-sky-950 bg-white sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="bg-zinc-100 text-zinc-950 p-1.5 rounded-lg font-bold text-xl">S</div>
-          <h1 className="text-xl font-bold tracking-tight">SaaS AI Sourcing</h1>
+          <div className="bg-sky-500 text-white p-2 border-2 border-sky-950 rounded-xl font-black text-2xl rotate-[-3deg] shadow-[2px_2px_0px_0px_rgba(8,47,73,1)]">
+            AI
+          </div>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">
+            SaaS<span className="text-sky-600">Sourcing</span>
+          </h1>
         </div>
-        <div className="flex items-center gap-4 text-sm text-zinc-400">
-          <span>מחובר כגירסה ראשונה</span>
-          <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+        
+        <div className="flex items-center gap-6">
+          <div className="hidden sm:flex items-center gap-2 bg-amber-100 border-2 border-amber-500 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-800">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+            System Active
+          </div>
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs px-3 py-2 border-2 border-rose-300 rounded-lg transition-all transform hover:translate-y-[-2px]"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Logout
+          </button>
         </div>
       </header>
 
-      {/* --- Dashboard Layout Split-Screen --- */}
-      <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* --- Main Workspace (Split-Screen) --- */}
+      <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 my-6">
         
-        {/* ================= צד ימין: טופס קלט ואפשרויות ================= */}
+        {/* ================= LEFT SIDE: INPUT & CONFIGURATION (Ocean Blue Border) ================= */}
         <section className="lg:col-span-5 space-y-6">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-xl">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-zinc-400" />
-              <h2 className="text-lg font-semibold">איתור וניתוח מוצר</h2>
+          <div className="bg-white border-2 border-sky-600 rounded-2xl p-6 shadow-[6px_6px_0px_0px_rgba(2,132,199,0.15)] transition-transform hover:scale-[1.01]">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 bg-sky-50 border border-sky-200 rounded-lg">
+                <Link2 className="w-5 h-5 text-sky-600" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900">Product Link Sourcing</h2>
             </div>
-            <p className="text-sm text-zinc-400 mb-6">הזן לינק של מוצר מאתרים נבחרים (Amazon, AliExpress וכו') ומנוע ה-AI שלנו ישלוף את הנתונים ויכתוב עבורך את הקופי המושלם.</p>
+            <p className="text-sm text-slate-500 mb-6">Drop any e-commerce product URL below. Our smart bots will instantly scrape the technical specs, analyze parameters, and feed the AI copy engine.</p>
             
-            <form onSubmit={handleScrapeSubmit} className="space-y-4">
+            <form onSubmit={handleScrapeSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-2">כתובת ה-URL של המוצר</label>
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-600 mb-2">Product Target URL</label>
                 <div className="relative">
-                  <Link2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                   <input
                     type="url"
                     required
                     placeholder="https://www.amazon.com/dp/B09XS7JWHH..."
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pr-10 pl-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors text-left"
+                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pl-4 pr-4 py-3.5 text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all shadow-inner"
                     value={productUrl}
                     onChange={(e) => setProductUrl(e.target.value)}
                   />
                 </div>
               </div>
 
+              {/* Action Button: Yellow Sand Theme */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-medium py-3 rounded-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50 text-sm shadow"
+                className="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-black py-4 rounded-xl flex items-center justify-center gap-2 border-2 border-amber-600 transition-all shadow-[4px_4px_0px_0px_rgba(245,158,11,0.2)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50 text-base"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    סורק ומנתח באמצעות AI...
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    🤖 Bots Extracting Data...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
-                    סרוק והפק קמפיין שיווקי
+                    <Sparkles className="w-5 h-5" />
+                    Analyze & Generate Copy
                   </>
                 )}
               </button>
             </form>
           </div>
 
-          {/* תיבת סטטוס/הנחיות מערכת */}
-          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-5 text-xs text-zinc-500 flex gap-3">
-            <AlertTriangle className="w-4 h-4 text-zinc-500 flex-shrink-0 mt-0.5" />
+          {/* Guidelines Box */}
+          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5 text-xs text-indigo-950 flex gap-4">
+            <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold flex-shrink-0">
+              AI
+            </div>
             <div>
-              <span className="font-semibold text-zinc-400 block mb-1">הנחיות הפצה:</span>
-              לאחר סיום הניתוח, הטקסטים יופיעו בצד שמאל. תוכל לערוך אותם באופן מקומי או ללחוץ ישירות על אחד מכפתורי ה-Publish כדי לשגר אותם אוטומטית לערוצים שלך.
+              <span className="font-extrabold block text-sm text-indigo-900 mb-1">How it works:</span>
+              Once clicked, our system triggers an asynchronous background process that populates the preview deck on the right. You can tweak everything live before blasting to social media channels.
             </div>
           </div>
         </section>
 
-        {/* ================= צד שמאל: תצוגה מקדימה וניהול קופי ================= */}
+        {/* ================= RIGHT SIDE: LIVE DYNAMIC PREVIEW DECK (Ocean Blue Border) ================= */}
         <section className="lg:col-span-7">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl overflow-hidden h-full flex flex-col">
+          <div className="bg-white border-2 border-sky-600 rounded-2xl shadow-[6px_6px_0px_0px_rgba(2,132,199,0.15)] overflow-hidden h-full flex flex-col">
             
-            {/* כותרת האזור הדינמי */}
-            <div className="px-6 py-4 border-b border-zinc-800 bg-zinc-900/80 flex items-center justify-between">
+            {/* Header with Clean Purple AI Theme */}
+            <div className="px-6 py-4 bg-indigo-600 text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-zinc-400" />
-                <h3 className="text-sm font-medium">קמפיין מוצר מוכן (Live AI Preview)</h3>
+                <Layers className="w-5 h-5 text-amber-300" />
+                <h3 className="font-black text-base tracking-wide">Live Multi-Channel Content Preview</h3>
               </div>
-              <span className="text-xs bg-zinc-800 text-zinc-300 px-2.5 py-1 rounded-full border border-zinc-700">תצוגת סימולציה</span>
+              <span className="text-xs bg-slate-900/30 text-amber-300 font-bold px-3 py-1 rounded-full border border-indigo-400">
+                AI Pipeline Active
+              </span>
             </div>
 
-            {/* תוכן התצוגה המקדימה */}
-            <div className="p-6 flex-1 space-y-6">
+            {/* Inner Content Area */}
+            <div className="p-6 flex-1 flex flex-col justify-between space-y-6">
               
-              {/* כרטיסיית מוצר עליונה (תמונה + כותרת שנשלפה) */}
-              <div className="flex flex-col md:flex-row gap-4 bg-zinc-950 p-4 border border-zinc-800 rounded-lg">
-                <div className="w-full md:w-32 h-32 bg-zinc-900 rounded-md overflow-hidden flex-shrink-0 border border-zinc-800 relative">
-                  {mockScrapedData.imageUrl ? (
-                    <img src={mockScrapedData.imageUrl} alt="product" className="w-full h-full object-cover" />
-                  ) : (
-                    <Image className="w-6 h-6 text-zinc-700 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+              {/* Product Scraped Header Widget */}
+              <div className="flex flex-col sm:flex-row gap-4 bg-slate-50 border border-slate-200 p-4 rounded-xl">
+                <div className="w-full sm:w-28 h-28 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-slate-300 relative group">
+                  {scrapedData.imageUrl && (
+                    <img src={scrapedData.imageUrl} alt="Target Product" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                   )}
                 </div>
                 <div className="flex flex-col justify-center">
-                  <span className="text-xs text-zinc-500 uppercase tracking-wider mb-1 font-mono">Scraped Title</span>
-                  <h4 className="text-base font-semibold text-zinc-200 leading-snug">{mockScrapedData.title}</h4>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-sky-600 mb-1">Target Identified</span>
+                  <h4 className="text-base font-bold text-slate-900 leading-snug line-clamp-2">{scrapedData.title}</h4>
                 </div>
               </div>
 
-              {/* ניווט בין כרטיסיות ה-AI Copywriting (Tabs) */}
-              <div>
-                <div className="flex border-b border-zinc-800 gap-2">
-                  <button 
-                    onClick={() => setActiveTab('telegram')}
-                    className={`pb-3 text-sm font-medium px-4 border-b-2 transition-all ${activeTab === 'telegram' ? 'border-zinc-100 text-zinc-100' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
-                  >
-                    טקסט לטלגרם
-                  </button>
-                  <button 
-                    onClick={() => setActiveTab('facebook')}
-                    className={`pb-3 text-sm font-medium px-4 border-b-2 transition-all ${activeTab === 'facebook' ? 'border-zinc-100 text-zinc-100' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
-                  >
-                    פוסט לפייסבוק
-                  </button>
-                  <button 
-                    onClick={() => setActiveTab('pinterest')}
-                    className={`pb-3 text-sm font-medium px-4 border-b-2 transition-all ${activeTab === 'pinterest' ? 'border-zinc-100 text-zinc-100' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
-                  >
-                    תיאור לפינטרסט
-                  </button>
+              {/* Tab Navigation */}
+              <div className="flex-1 flex flex-col">
+                <div className="flex flex-wrap border-b border-slate-200 gap-1">
+                  {['telegram', 'facebook', 'pinterest'].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`pb-3 pt-1 text-sm font-black px-4 capitalize transition-all border-b-2 ${
+                        activeTab === tab 
+                          ? 'border-sky-500 text-sky-600' 
+                          : 'border-transparent text-slate-400 hover:text-slate-600'
+                      }`}
+                    >
+                      {tab} Post
+                    </button>
+                  ))}
                 </div>
 
-                {/* תיבת תוכן הטאב הניתנת לעריכה */}
-                <div className="mt-4">
+                {/* Workspace Textarea */}
+                <div className="mt-4 flex-1">
                   <textarea
                     rows={6}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-4 text-sm text-zinc-300 font-mono leading-relaxed focus:outline-none focus:border-zinc-700 resize-none whitespace-pre-wrap"
-                    value={mockScrapedData.aiCopy[activeTab]}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-800 font-mono leading-relaxed focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 resize-none"
+                    value={scrapedData.aiCopy[activeTab]}
                     onChange={(e) => {
-                      const updatedCopy = { ...mockScrapedData.aiCopy, [activeTab]: e.target.value };
-                      setMockScrapedData({ ...mockScrapedData, aiCopy: updatedCopy });
+                      const updatedCopy = { ...scrapedData.aiCopy, [activeTab]: e.target.value };
+                      setScrapedData({ ...scrapedData, aiCopy: updatedCopy });
                     }}
                   />
                 </div>
               </div>
 
-              {/* --- 3 כפתורי הפצה ייעודיים (Milestone A Action Points) --- */}
-              <div className="pt-2">
-                <label className="block text-xs font-medium text-zinc-500 mb-3">שגר לערוצי שיווק אוטומטיים (Publish Via n8n):</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* --- Dedicated Action Distribution Buttons --- */}
+              <div className="pt-4 border-t border-slate-100">
+                <span className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-3">
+                  Instant Channel Dispatch (Via n8n Automation Engine)
+                </span>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   
-                  {/* כפתור טלגרם */}
+                  {/* Telegram Trigger */}
                   <button 
                     onClick={() => handlePublish('telegram')}
-                    className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 text-xs py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium"
+                    className="bg-white hover:bg-sky-50 border border-slate-200 hover:border-sky-400 text-slate-900 text-xs font-black py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:translate-y-[-1px]"
                   >
-                    <SendHorizontal className="w-3.5 h-3.5 text-sky-400" />
-                    העלאה לטלגרם
+                    <SendHorizontal className="w-4 h-4 text-sky-500" />
+                    Push Telegram
                   </button>
 
-                  {/* כפתור פייסבוק */}
+                  {/* Facebook Trigger */}
                   <button 
                     onClick={() => handlePublish('facebook')}
-                    className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 text-xs py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium"
+                    className="bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-400 text-slate-900 text-xs font-black py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:translate-y-[-1px]"
                   >
-                    <Share2 className="w-3.5 h-3.5 text-blue-500" />
-                    העלאה לפייסבוק
+                    <Share2 className="w-4 h-4 text-indigo-600" />
+                    Publish Facebook
                   </button>
 
-                  {/* כפתור פינטרסט */}
+                  {/* Pinterest Trigger */}
                   <button 
                     onClick={() => handlePublish('pinterest')}
-                    className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 text-xs py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium"
+                    className="bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-400 text-slate-900 text-xs font-black py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:translate-y-[-1px]"
                   >
-                    <Image className="w-3.5 h-3.5 text-rose-500" />
-                    העלאה לפינטרסט
+                    <Image className="w-4 h-4 text-rose-500" />
+                    Pin to Pinterest
                   </button>
 
                 </div>
