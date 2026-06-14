@@ -5,6 +5,7 @@ python-dotenv==1.0.1
 requests==2.32.3
 beautifulsoup4==4.12.3
 openai==1.30.3
+httpx>=0.26.0
 
 # Database Stack
 sqlmodel==0.0.22

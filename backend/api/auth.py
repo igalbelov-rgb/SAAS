@@ -5,7 +5,7 @@ from app.database import get_session
 from app.models import User
 from app.crypto import hash_password, verify_password, create_access_token  # 🔥 ייבוא הפונקציות הישירות
 
-router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+router = APIRouter(tags=["Authentication"])
 
 # --- סכמות קלט/פלט (Schemas) ---
 class UserRegister(BaseModel):
