@@ -40,3 +40,20 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+def verify_access_token(token: str) -> dict | None:
+    """
+    מפענחת ומאמתת טוקן JWT.
+    אם הטוקן תקין ובתוקף - מחזירה את ה-dict של הדאטא.
+    אם פג תוקף או פגום - מחזירה None.
+    """
+    try:
+        # מפענח את הטוקן באמצעות המפתח והאלגוריתם של המערכת
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        # הטוקן פג תוקף (עברו יותר מ-30 דקות)
+        return None
+    except jwt.PyJWTError:
+        # הטוקן פגום, שונה או מזויף
+        return None
