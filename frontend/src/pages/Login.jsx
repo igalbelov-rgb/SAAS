@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // 🔥 שינוי 1: ייבוא הניווט של React Router
+import { useAuth } from '../contexts/AuthContext'; // 🔥 שינוי 2: ייבוא ה-Hook של האותנטיקציה שהקמנו
 import { authService } from '../services/api';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
 
 export default function Login() {
+  const navigate = useNavigate(); // 🔥 שינוי 3: הגדרת פונקציית הניווט
+  const { login } = useAuth(); // 🔥 שינוי 4: שליפת פונקציית הלוגין הריאקטיבית מהקונטקסט
+  
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [status, setStatus] = useState({ loading: false, error: null });
 
@@ -12,10 +17,14 @@ export default function Login() {
 
     try {
       const data = await authService.login(formData.email, formData.password);
-      // כרגע נשמור את ה-Token ב-localStorage כדי לבדוק שהכל עובד
+      
       if (data.access_token) {
-        localStorage.setItem('token', data.access_token);
-        window.location.href = '/dashboard';
+        // 🔥 שינוי 5: במקום לשמור ידנית ולרענן את הדף, מפעילים את פונקציית ה-login של הקונטקסט.
+        // הפונקציה הזו שומרת את הטוקן, מעדכנת את ה-user ומעדכנת את ה-State של כל האפליקציה בבת אחת.
+        login(data.access_token, data.user);
+        
+        // 🔥 שינוי 6: ניווט ריאקטיבי פנימי לדשבורד - מונע את באג ההקפצה חזרה ללוגין!
+        navigate('/dashboard');
       }
     } catch (err) {
       setStatus({ 

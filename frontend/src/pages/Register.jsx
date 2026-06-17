@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext'; // 🔥 ייבוא הקונטקסט
 import { authService } from '../services/api';
 import { User, Mail, Lock, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function Register() {
+  const navigate = useNavigate();
+  const { login } = useAuth(); // 🔥 שליפת פונקציית הלוגין הריאקטיבית מהקונטקסט
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
   const [status, setStatus] = useState({ loading: false, error: null, success: false });
 
@@ -11,8 +15,25 @@ export default function Register() {
     setStatus({ loading: true, error: null, success: false });
 
     try {
+      // 1. רישום המשתמש בדאטאבייס
       await authService.register(formData.email, formData.password, formData.fullName);
+      
+      // 2. ביצוע לוגין אוטומטי מייד לאחר ההרשמה
+      const loginData = await authService.login(formData.email, formData.password);
+  
+      // 3. עדכון הסטטוס המקומי
       setStatus({ loading: false, error: null, success: true });
+
+      // 🔥 התיקון הקריטי: אם חזר טוקן, נזריק אותו לקונטקסט וננווט מייד לדשבורד
+      if (loginData && loginData.access_token) {
+        login(loginData.access_token, loginData.user);
+        
+        // השהייה קלה של חצי שנייה כדי שהמשתמש יספיק לראות מצב "הצלחה" (אופציונלי אך מומלץ ל-UX)
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 600);
+      }
+      
     } catch (err) {
       const errorMsg = err.response?.data?.detail?.[0]?.msg || err.response?.data?.detail || 'משהו השתבש ברישום. נסה שוב.';
       setStatus({ loading: false, error: errorMsg, success: false });

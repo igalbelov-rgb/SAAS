@@ -96,12 +96,39 @@ saas/                  # תיקיית שורש (Root)
 │   └── nginx.conf                  # מנתב פניות ל-Frontend, ל-Backend ול-n8n
 │
 ├── frontend/                       # 💻 ממשק המשתמש (למשל React / Vite
-│   ├── node_modules
-│      └── *
+│   ├── node_modules/
+│   |  └── *
+│   │
 │   ├── public/
-|      └── favico.svg
-|      └── icons.svg
+|   |  └── favico.svg
+|   |  └── icons.svg
+│   │
 │   ├── src/
+│   |  └── assets/
+│   |       └── *
+│   |  └── components/
+│   |  |    └── ui/
+│   |  |        └── (empty folder)
+│   |  |    └── Productcard.jsx
+│   |  |    └── ProductPreview.jsx
+│   |  |    └── PublishControl.jsx(empty file)
+│   │  |
+│   |  └── contexts/
+│   |  |    └── AuthContext.jsx(empty file)
+│   │  |
+│   |  └── pages/
+│   |  |    └── Dashboard.jsx
+│   |  |    └── Login.jsx
+│   |  |    └── Register.jsx
+│   |  |
+│   |  └── services/
+│   |  |    └── api.js
+│   |  |
+│   |  └── App.css
+│   |  └── App.jsx
+│   |  └── index.css
+│   |  └── main.jsx
+│   │
 │   ├── package.json
 │   ├── .env.production             # 🔑 משתני סביבה של 
 │   ├── .env.development
@@ -115,7 +142,7 @@ saas/                  # תיקיית שורש (Root)
 הפרודקשן עבור ה-Client
 │   └── Dockerfile
 │
-├── backend/                 # 🐍 ה-Backend המרכזי (FastAPI)
+├── backend/              # 🐍 ה-Backend המרכזי (FastAPI)
 │   ├── app/
 │   │   ├── __init__.py
 │   │   ├── main.py                 # נקודת כניסה (FastAPI App)
@@ -123,15 +150,17 @@ saas/                  # תיקיית שורש (Root)
 │   │   ├── crypto.py               # 
 │   │   ├── database.py             # חיבור ל-ORM (SQLAlchemy/SQLModel)
 │   │   ├── models.py               # טבלאות הדאטאבייס (Users, Products, Subs)
-│   │   ├── schemas.py              # אימות קלט/פלט (Pydantic)
-│   │   │
-│   │   ├── api/                    # 📂 חלוקת ה-API לנתיבים (Routers)
-│   │   │   ├── auth.py             # רישום, התחברות (JWT) וניהול משתמשים
-│   │   │   ├── products.py         # האוטומציה של הזרקת הלינקים וה-AI
-│   │   │   └── billing.py          # סנכרון תשלומים (Stripe Webhooks)
-│   │   │
-│   │   ├── scrapers/               # מודול שליפת נתונים מהאינטרנט
-│   │   └── ai_services/            # מודול חיבור ל-OpenAI / Stability
+│   │   └── schemas.py              # אימות קלט/פלט (Pydantic)
+│   │   
+│   ├── api/                    # 📂 חלוקת ה-API לנתיבים (Routers)
+│   │   ├── auth.py             # רישום, התחברות (JWT) וניהול משתמשים
+│   │   ├── products.py         # האוטומציה של הזרקת הלינקים וה-AI
+│   │   └── billing.py          # סנכרון תשלומים (Stripe Webhooks)
+│   │   
+│   ├── scrapers/               # מודול שליפת נתונים מהאינטרנט
+│   |    └── __init__.py
+│   |    └── product_scrapers.py
+│   └── ai_services/ (empty folder)           # מודול חיבור ל-OpenAI / Stability
 │   │
 │   ├── .env.production             # 🔑 קובץ הסודות של ה-Backend בפרודקשן (לא עולה לגיט!)
 │   ├── requirements.txt
@@ -141,7 +170,10 @@ saas/                  # תיקיית שורש (Root)
 │   └── workflows/
 │       └── publish_pipeline.json
 │
-└── docker-compose.yml              # 🐳 מנצח התזמורת של הפרודקשן (מקים את כל השירותים)
+├── docker-compose.yml              # 🐳 מנצח התזמורת של הפרודקשן (מקים את כל השירותים)
+├── .gitignore
+└── readme.md
+
 
 ### 🎨 UI/UX Overhaul & Modernization (Frontend)
 - **Tech Stack Upgrade:** Migrated the frontend architecture to utilize **Vite 8**, **Tailwind CSS v4**, and **React 19** for maximum compilation speed and state efficiency.

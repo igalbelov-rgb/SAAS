@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import ProductPreview from '../components/ProductPreview';
 import { 
   Link2, Sparkles, SendHorizontal, Share2, Image, 
   Layers, Loader2, LogOut, AlertCircle 
@@ -8,10 +10,11 @@ import { productService } from '../services/api';
 
 export default function Dashboard() {
   // --- System States ---
+  const { user, logout } = useAuth(); // 🔥 שליפת המשתמש ופונקציית ה-Logout המסודרת מהקונטקסט
   const [productUrl, setProductUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('telegram'); 
-  const [errorMessage, setErrorMessage] = useState(''); // State חדש להצגת שגיאות מהשרת
+  const [errorMessage, setErrorMessage] = useState(''); // State להצגת שגיאות מהשרת
 
   // ה-Mock Data המקור שלך משמש כעת כברירת מחדל אסתטית עד הסריקה הראשונה
   const [scrapedData, setScrapedData] = useState({
@@ -26,27 +29,50 @@ export default function Dashboard() {
 
   // 2. חיבור פונקציית הסריקה ל-FastAPI האמיתי שלך
   const handleScrapeSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // 🛑 מונע רענון עמוד מלא ושומר על ה-State בריצה אסינכרונית
     if (!productUrl) return;
     
     setIsLoading(true);
     setErrorMessage('');
     
     try {
-      const data = await productService.scrapeProduct(productUrl);
+      const response = await productService.scrapeProduct(productUrl);
       
-      if (data.success) {
+      // בטיחות קלט: תמיכה במקרה שהסרביס מחזיר ישירות את הדאטא או את אובייקט ה-response המלא של Axios
+      const data = response && response.data !== undefined ? response.data : response;
+      
+      console.log("🔥 Data received from backend: ", data);
+
+      if (data) {
+        // חילוץ גמיש למקרה שה-Backend מחזיר בשמות שונים
+        const serverImage = data.imageUrl || data.image_url || data.image;
+        const serverTitle = data.title || data.product_title;
+
+        // בדיקה האם מדובר בנפילה לגיבוי של השרת (כדי שלא נציג שוב את האוזניות)
+        const isFallback = data.success === false || serverTitle?.includes("Scraped Product");
+
         setScrapedData({
-          title: data.title,
-          imageUrl: data.imageUrl,
-          aiCopy: data.aiCopy // מקבל את ה-Telegram, Facebook, Pinterest מהשרת
+          title: serverTitle || "Unknown Product",
+          // אם זה פולבק, נציג תמונת אזהרה/רובוט אסתטית ולא את האוזניות, כדי שתדע שהסריקה נכשלה בשרת
+          imageUrl: isFallback 
+            ? "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=500&q=80" // תמונת קונספט טכנולוגית שונה
+            : (serverImage || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80"),
+          
+          aiCopy: data.aiCopy || { 
+            telegram: data.telegram || "", 
+            facebook: data.facebook || "", 
+            pinterest: data.pinterest || "" 
+          }
         });
-      } else {
-        setErrorMessage(data.error || 'Failed to extract product data.');
+
+        // אם השרת סימן שהגירוד נכשל, נציג הודעה ברורה
+        if (data.success === false) {
+          setErrorMessage(data.error || 'האתר חסם גירוד אוטומטי (Anti-Bot). מציג נתוני גיבוי זמניים.');
+        }
       }
     } catch (err) {
       console.error('Scraping connection error:', err);
-      setErrorMessage('Connection to backend failed. Please check your docker logs.');
+      setErrorMessage('חיבור לשרת נכשל. אנא ודא שה-Backend רץ ותקין.');
     } finally {
       setIsLoading(false);
     }
@@ -64,12 +90,13 @@ export default function Dashboard() {
       });
     } catch (err) {
       console.error(`Publishing to ${platform} failed:`, err);
+      alert(`נכשלה ההפצה לפלטפורמת ${platform}`);
     }
   };
 
+  // 🔥 4. התיקון לקריסת האותנטיקציה: שימוש ב-logout הגלובלי שמנקה את ה-Context וה-LocalStorage יחד
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    window.location.href = '/login';
+    logout();
   };
 
   return (
