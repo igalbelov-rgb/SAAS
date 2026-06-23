@@ -60,7 +60,7 @@ def login_user(login_data: UserLogin, session: Session = Depends(get_session)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
-         )
+        )
 
     # 2. אימות הסיסמה המוצפנת
     if not verify_password(login_data.password, user.hashed_password):

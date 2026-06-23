@@ -9,6 +9,7 @@ beautifulsoup4==4.12.3
 openai==1.30.3
 httpx>=0.26.0
 h2==4.1.0
+requests==2.31.0
 
 # Database Stack
 sqlmodel==0.0.22

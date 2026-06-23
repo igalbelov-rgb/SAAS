@@ -1,0 +1,55 @@
+{
+  "name": "Publish Social Media Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v1/publish-product",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "id": "webhook-trigger-id",
+      "name": "FastAPI Webhook"
+    },
+    {
+      "parameters": {
+        "botToken": "={{ $env.TELEGRAM_TOKEN }}",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "={{ $json.body.body.aiCopy.telegram }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ],
+      "id": "telegram-node-id",
+      "name": "Telegram Bot"
+    }
+  ],
+  "connections": {
+    "FastAPI Webhook": {
+      "main": [
+        [
+          {
+            "node": "Telegram Bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "publish_pipeline_workflow",
+  "meta": null,
+  "tags": []
+}

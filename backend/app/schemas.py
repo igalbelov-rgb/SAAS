@@ -14,11 +14,30 @@ class AICopywriting(BaseModel):
 
 # --- תשובה שחוזרת ל-Frontend לאחר סריקה והפקת AI ---
 class ProductScrapeResponse(BaseModel):
+    id: Optional[int] = None  # 🔥 הוסף את השורה הזו בראש המודל!
     success: bool
     title: str
-    imageUrl: str
-    description: Optional[str] = None  # 🔥 תוספת קריטית כדי לתמוך בשדה התיאור שחילצנו
-    specs: List[str]
+    imageUrl: Optional[str] = None
+    description: Optional[str] = None
+    specs: List[str] = []
     sourceUrl: str
-    aiCopy: AICopywriting  # אובייקט מקונן המכיל את שלוש הפלטפורמות
+    aiCopy: AICopywriting
     error: Optional[str] = None
+
+    class Config:
+        from_attributes = True # מאפשר ל-Pydantic לקרוא מודלים של SQLAlchemy בצורה חלקה
+    
+class ProductPublishSchema(BaseModel):
+    product_id: int
+    custom_message: Optional[str] = None
+    
+class ProductPublishRequest(BaseModel):
+    product_id: int  # 🔥 זה מה שהפרונטאנד שולח כעת
+    title: str
+    imageUrl: str
+    content: str
+    
+class ProductPublishResponse(BaseModel):
+    status: str
+    message: str
+    product_id: int
