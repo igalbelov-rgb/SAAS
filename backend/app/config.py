@@ -3,18 +3,22 @@ from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
-# טעינת קובץ ה-.env.production שנמצא בתיקיית האם של app
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env.production'))
+# טעינה מוקדמת כדי לוודא שהקובץ נגיש
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env.production')
+load_dotenv(dotenv_path=env_path)
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = os.getenv("DATABASE_URL")
-    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
-    JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
-    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY")
-    TELEGRAM_TOKEN: str = os.getenv("TELEGRAM_TOKEN")
-    TELEGRAM_CHAT_ID: str = os.getenv("TELEGRAM_CHAT_ID")
-    # הכתובת הפנימית של n8n בתוך ה-Docker Network 🔌
-    N8N_WEBHOOK_URL: str = os.getenv("N8N_WEBHOOK_URL", "http://saas_n8n_automation:5678/webhook/v1/publish-product")
+    DATABASE_URL: str
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    GROQ_API_KEY: str
+    TELEGRAM_TOKEN: str
+    TELEGRAM_CHAT_ID: str
+    N8N_WEBHOOK_URL: str = "http://saas_n8n_automation:5678/webhook/v1/publish-product"
     
+    class Config:
+        env_file = ".env.production"
+        extra = "ignore" # מתעלם ממשתנים עודפים בקובץ ה-env אם יש
+        env_file_encoding = "utf-8" # 🔥 שומר עליך משגיאות קידוד ותומך בתווים מיוחדים
 settings = Settings()

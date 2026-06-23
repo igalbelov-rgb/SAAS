@@ -160,7 +160,9 @@ saas/                  # תיקיית שורש (Root)
 │   ├── scrapers/               # מודול שליפת נתונים מהאינטרנט
 │   |    └── __init__.py
 │   |    └── product_scrapers.py
-│   └── ai_services/ (empty folder)           # מודול חיבור ל-OpenAI / Stability
+│   └── ai_services/            # מודול חיבור ל-OpenAI / Stability
+|   │    └── __init__.py
+|   │    └── open_ai.py
 │   │
 │   ├── .env.production             # 🔑 קובץ הסודות של ה-Backend בפרודקשן (לא עולה לגיט!)
 │   ├── requirements.txt

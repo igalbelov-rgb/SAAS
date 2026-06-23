@@ -1,6 +1,7 @@
 # בקובץ הזה אנחנו נחבר את ה-ProductScraper שבנינו קודם, נקבל את הלינק, ונחזיר את המידע המעובד יחד עם Mock AI דמה (בשלב הבא נחבר את ה-AI האמיתי מתוך ai_services)
 import requests
 from datetime import datetime
+from dotenv import load_dotenv
 from sqlmodel import Session, select
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
@@ -9,16 +10,19 @@ from app.database import get_session
 from app.models import Product, User
 from app.config import settings
 from scrapers.product_scraper import ProductScraper
-from app.crypto import verify_access_token 
+from app.crypto import verify_access_token  # או שם הקובץ שבו שמרת את ה-Class
 import logging
-import httpx  # 🔥 חובה להוסיף httpx ל-requirements.txt אם אין לך (ספריה לקריאות HTTP אסינכרוניות)
+import httpx
+from ai_services.open_ai import OpenAIService  # או שם הקובץ שבו שמרת את ה-Class
+
+ai_service = OpenAIService() # אתחול השירות
 
 logger = logging.getLogger(__name__)
 
 # יצירת ה-Router עבור ישויות המוצרים
 router = APIRouter(tags=["Products & Automation"])
 scraper = ProductScraper()  # אתחול מחלקת הסריקה שבנינו במיילסטון הקודם
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")  # נקודת קצה לדמיוננו עבור אימות משתמשים (לא בשימוש כרגע)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")  # נקודת קצה לדמיוננו עבור אימות משתמשים (לא בשימוש כרגע)I
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     """
@@ -52,19 +56,23 @@ async def scrape_product_endpoint(
     product_title = scraped_result.get("title", "Unknown E-Commerce Product")
     is_success = scraped_result.get("success", False)
     
-    # 2. יצירת לוגיקת AI זמנית (Mock AI)
+        # 2. הפעלת מנוע ה-AI האמיתי של Groq במקום ה-Mock!
     if is_success:
-        mock_ai_copy = AICopywriting(
-            telegram=f"🔥 CRAZY DEAL ALERT! 🔥\n\n🎧 {product_title} is now available!\n⚡ Limited time offer, don't miss out.\n\n📌 Link: {payload.url}",
-            facebook=f"Looking for the best quality? ✨\n\nWe just analyzed {product_title} and the specs are top-notch. Perfect for daily use and highly recommended by our team.\n\n👇 Check the link in the comments for a special discount!",
-            pinterest=f"{product_title} - Full specs, review, and dynamic setup ideas for 2026. Source: {payload.url}"
-        )
-    else:
-        mock_ai_copy = AICopywriting(
-            telegram=f"⚠️ OOPS! We couldn't scrape the product details from the provided URL. Please check the link and try again.\n\n📌 Link: {payload.url}",
-            facebook=f"Unfortunately, we couldn't retrieve the product information from the URL you provided. Please ensure it's a valid e-commerce product page and try again.",
-            pinterest=f"Unable to fetch product details from the provided URL. Please verify the link and try again."
-        )
+        try:
+            # שולחים ל-Groq את הכותרת, התיאור והלינק שגרדנו
+            mock_ai_copy = await ai_service.generate_product_copy(
+                title=product_title,
+                description=scraped_result.get("description", ""),
+                url=payload.url
+            )
+        except Exception as ai_err:
+            logger.error(f"[PRODUCTS_API] AI Generation failed, using static fallback: {ai_err}")
+            # השארת הגיבוי הישן למקרה ש-Groq חסום/ללא מפתח תקין
+            mock_ai_copy = AICopywriting(
+                telegram=f"🔥 CRAZY DEAL ALERT! 🔥\n\n🎧 {product_title}\n📌 Link: {payload.url}",
+                facebook=f"Check this out! {product_title}",
+                pinterest=f"{product_title} {payload.url}"
+            )
     
     # 🔥 3. שמירת המוצר בדאטאבייס כדי שייווצר לו ID אמיתי
     product_id = None
@@ -147,16 +155,14 @@ def publish_to_telegram(payload: ProductPublishRequest, db: Session = Depends(ge
                 detail="Product does not have an AI generated review yet. Generate it first."
             )
 
-    # 3. בניית ה-Payload שנשלח ל-n8n 
+    # 3. בניית ה-Payload שנשלח ל-n8n (במבנה שטוח ונקי)
     n8n_payload = {
         "productId": product.id,
         "title": product.title,
         "affiliate_url": product.affiliate_url,
         "image_url": product.image_url,
-        "body": {
-            "aiCopy": {
-                "telegram": product.ai_generated_review
-            }
+        "aiCopy": {
+            "telegram": product.ai_generated_review
         }
     }
 

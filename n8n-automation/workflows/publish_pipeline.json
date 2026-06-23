@@ -20,7 +20,7 @@
       "parameters": {
         "botToken": "={{ $env.TELEGRAM_TOKEN }}",
         "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
-        "text": "={{ $json.body.body.aiCopy.telegram }}",
+        "text": "={{ $json.body.aiCopy.telegram }}",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
