@@ -1,0 +1,41 @@
+name: CI/CD Pipeline to AWS EC2
+
+# הצינור ירוץ אוטומטית בכל פעם שיש Push (או מיזוג Pull Request) לברנץ' main או staging
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. שליפת הקוד העדכני מה-Repository בגיטהאב
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. התחברות לשרת ה-EC2 באמצעות SSH והרצת פקודות הפריסה
+      - name: Deploy to AWS EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}          # כתובת ה-IP הציבורית של השרת שלך
+          username: ubuntu                            # שם המשתמש הדיפולטיבי של אובונטו ב-AWS
+          key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}    # מפתח ה-SSH הפרטי שלך (תוכן קובץ ה-pem.)
+          script: |
+            # מעבר לתיקיית הפרויקט בשרת (ניצור אותה בשלבים הבאים)
+            cd ~/app
+
+            # משיכת הקוד העדכני ביותר מגיט ישירות לתוך השרת
+            git pull origin ${{ github.ref_name }}
+
+            # בנייה מחדש של הקונטיינרים ללא Cache (כדי לרענן את קוד ה-Python וה-React)
+            docker compose build --no-cache backend frontend nginx
+
+            # עצירה והרמה מחדש של כל השירותים במצב Detached (ברקע)
+            docker compose down
+            docker compose up -d
+
+            # ניקוי אימג'ים ישנים ומיותרים כדי שלא יסתמו את הדיסק של ה-EC2 הקטן
+            docker image prune -f
