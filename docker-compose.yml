@@ -30,8 +30,24 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy # ה-Backend יעלה רק אחרי שהדאטאבייס מוכן לקבל פניות
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000" # חשיפת ה-API של FastAPI בדפדפן או ב-Postman
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --log-level info
+    
+    # uvicorn app.main:app: מריץ את שרת ה-ASGI (שרת ה-Web של פייתון) ומפנה לקובץ ה-main.py שנמצא בתוך תיקיית app, ולמשתנה app (שם מוגדר ה-FastAPI שלך).
+
+    # --host 0.0.0.0: אומר לשרת להאזין לכל כרטיסי הרשת. בתוך דוקר זה חובה – אם לא תגדיר את זה, ה-Nginx או המחשב המארח לא יוכלו לדבר עם הקונטיינר.
+
+    # --port 8000: הפורט שבו השרת ירוץ.
+
+    # --reload: מצב פיתוח (חובה בבית!). בכל פעם שתשמור קובץ פייתון ב-VS Code, השרת יאתחל את עצמו אוטומטית בשבריר שנייה. לא תצטרך לעשות docker down ו-up מחדש על כל שינוי קוד.
+
+    # --log-level info: קובע כמה מידע Uvicorn ידפיס לטרמינל. רמת info היא האיזון המושלם לפיתוח – היא תציג לך שגיאות, אזהרות, ומידע בסיסי על כל בקשת HTTP שנכנסת (למשל: GET /api/users 200 OK). זה יעזור לך מאוד לעקוב אחרי הלוגים בזמן אמת. 
+    
     env_file:
-      - ./backend/.env.production
+      - ./backend/.env.development
     networks:
       - saas-network
 
@@ -39,9 +55,14 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: saas_frontend_client
     restart: always
+    volumes:
+      - ./frontend:/app           # מזריק את קוד ה-React לקונטיינר לעדכון קוד חי
+      - /app/node_modules         # ⚠️ חשוב: מונע מדוקר לדרוס את ה-node_modules שבתוך הקונטיינר עם אלו של המחשב המארח
+    environment:
+      - WATCHPACK_POLLING=true    # מבטיח שדוקר יזהה שינויי קבצים במערכות הפעלה שונות (כמו ווינדוס)
     networks:
       - saas-network
 
@@ -56,7 +77,7 @@ services:
       - n8n_data:/home/node/.n8n # שמירת הגדרות החשבונות והלוגים של הריצות
       - ./n8n-automation/workflows:/etc/n8n/workflows # קריאת קובצי ה-JSON של האוטומציות
     env_file:
-      - ./backend/.env.production # 🔥 מושך את כל המשתנים ישירות מהקובץ הזה
+      - ./backend/.env.development # 🔥 מושך את כל המשתנים ישירות מהקובץ הזה
     environment:
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - N8N_ENCRYPTION_KEY=your_secret_key # משתנה פנימי של n8n
@@ -67,14 +88,14 @@ services:
 
   # 5. שומר הסף והראוטר המרכזי - Nginx
   nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
     container_name: saas_nginx_proxy
+    image: nginx:1.25-alpine
     restart: always
     ports:
       - "80:80"   # מאזין לחריצי הרשת הציבוריים של השרת
       - "443:443" # מוכן לתעודות SSL בהמשך
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - backend
       - frontend

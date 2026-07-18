@@ -1,6 +1,5 @@
 name: CI/CD Pipeline to AWS EC2
 
-# הצינור ירוץ אוטומטית בכל פעם שיש Push (או מיזוג Pull Request) לברנץ' main או staging
 on:
   push:
     branches:
@@ -20,22 +19,21 @@ jobs:
       - name: Deploy to AWS EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.AWS_EC2_HOST }}          # כתובת ה-IP הציבורית של השרת שלך
+          host: ${{ secrets.AWS_EC2_HOST }}          # כתובת ה-IP הציבורית של השרת
           username: ubuntu                            # שם המשתמש הדיפולטיבי של אובונטו ב-AWS
-          key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}    # מפתח ה-SSH הפרטי שלך (תוכן קובץ ה-pem.)
+          key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}    # מפתח ה-SSH הפרטי (תוכן קובץ ה-pem)
           script: |
-            # מעבר לתיקיית הפרויקט בשרת (ניצור אותה בשלבים הבאים)
+            # מעבר לתיקיית הפרויקט בשרת
             cd ~/app
 
-            # משיכת הקוד העדכני ביותר מגיט ישירות לתוך השרת
+            # משיכת הקוד העדכני ביותר מהענף הנוכחי
             git pull origin ${{ github.ref_name }}
 
-            # בנייה מחדש של הקונטיינרים ללא Cache (כדי לרענן את קוד ה-Python וה-React)
-            docker compose build --no-cache backend frontend nginx
+            # כיבוי הקונטיינרים הקיימים בשרת
+            docker compose -f docker-compose.prod.yml down
 
-            # עצירה והרמה מחדש של כל השירותים במצב Detached (ברקע)
-            docker compose down
-            docker compose up -d
+            # בנייה והרמה מחדש ללא Cache כדי שהשינויים יתפסו מייד
+            docker compose -f docker-compose.prod.yml up -d --build --no-cache
 
-            # ניקוי אימג'ים ישנים ומיותרים כדי שלא יסתמו את הדיסק של ה-EC2 הקטן
+            # ניקוי אימג'ים ישנים ומיותרים כדי שלא יסתמו את הדיסק של ה-EC2 החינמי
             docker image prune -f

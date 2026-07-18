@@ -7,8 +7,13 @@ logger = logging.getLogger(__name__)
 
 class N8NAutomationService:
     def __init__(self):
-        # שימוש בכתובת ה-URL מה-settings כברירת מחדל
-        self.default_url = getattr(settings, "N8N_WEBHOOK_URL", "http://saas_n8n_automation:5678/webhook/v1/publish-product")
+        # אנחנו קוראים ישירות מה-settings המעודכן. 
+        # ה-getattr שומר עלינו כפלסטלינה למקרה שהמשתנה לא מוגדר מסיבה כלשהי ב-settings
+        self.default_url = getattr(
+            settings, 
+            "N8N_WEBHOOK_URL", 
+            "http://saas_n8n_automation:5678/webhook/v1/publish-product"
+        )
 
     async def send_to_pipeline(self, payload: dict, custom_url: str = None) -> bool:
         """משגר payload בצורה אסינכרונית ל-n8n"""

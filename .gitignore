@@ -9,3 +9,12 @@ coverage/
 .idea/
 .vscode/
 *.pem
+roadmap.md
+roadmap_progress.md
+creating_endpoints.md
+JWT_TOKEN.md
+auth_flow.md
+Docker_architecture.md
+project_map.md
+.env
+__pycache__/
