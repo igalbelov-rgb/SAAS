@@ -36,7 +36,6 @@ services:
       - ./backend/.env.production
     networks:
       - saas-network
-
   # 4. מנוע האוטומציה וההפצה - n8n
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
